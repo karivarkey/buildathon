@@ -22,7 +22,7 @@ const Map = () => {
       >
         <TileLayer
           url="https://api.mapbox.com/styles/v1/karivarkey/cm1kfdqm700gg01qr0s1716w4/tiles/{z}/{x}/{y}?access_token=pk.eyJ1Ijoia2FyaXZhcmtleSIsImEiOiJjbHE2eGo4MnUwY2ZvMmpueGw3emdheWlsIn0.onksKbtF2ua4Nk8cyoA_JQ" // Replace with your style URL
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://www.mapbox.com/">Mapbox</a>'
+          attribution='&copy; '
         />
         <Marker position={[40.74157, -73.96851]} icon={customIcon}>
           <Popup>
