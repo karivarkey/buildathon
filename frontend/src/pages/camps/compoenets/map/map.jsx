@@ -66,7 +66,7 @@ const PenguinMap = ({ locations }) => {
         <MapContainer
           center={defaultPosition}
           zoom={2}
-          style={{ height: "100vh", width: "100%" }}
+          style={{ height: "92vh", width: "100%" }}
           touchZoom={true}
           dragging={true}
         >

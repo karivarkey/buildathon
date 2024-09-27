@@ -3,7 +3,7 @@ import Landing from "./pages/landing";
 import "leaflet/dist/leaflet.css";
 import News from "./pages/landing/components/news";
 import Camps from "./pages/camps/camps";
-
+import ManageCamps from "./pages/ManageCamps";
 const App = () => {
   return (
     <Router>
@@ -11,6 +11,7 @@ const App = () => {
         <Route path="/" element={<Landing />} />
         <Route path="/news" element={<News />} />
         <Route path="/camps" element={<Camps />} />
+        <Route path="/manage-camps" element={<ManageCamps />} />
       </Routes>
     </Router>
   );

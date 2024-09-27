@@ -22,7 +22,7 @@ function Navbar() {
         <img src={news} alt="Medicine" />
       </button>
       <button
-        onClick={() => navigate("/medicine")}
+        onClick={() => navigate("/manage-camps")}
         className="hover:scale-110 transition-transform"
       >
         <img src={medicine} alt="News" />
