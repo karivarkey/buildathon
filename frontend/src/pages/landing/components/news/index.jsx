@@ -98,7 +98,7 @@ const News = () => {
       <div className="absolute bottom-0 w-full">
         {" "}
         {/* Use relative positioning */}
-        <Navbar /> {/* Always visible at the bottom */}
+        <Navbar props="news" /> {/* Always visible at the bottom */}
       </div>
     </div>
   );

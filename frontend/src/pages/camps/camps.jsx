@@ -27,7 +27,7 @@ const Camps = () => {
   return (
     <div className="max-h-dvh">
       <PenguinMap locations={camps} />
-      <Navbar className="absolute bottom-2 z-30" />
+      <Navbar className="absolute bottom-2 z-30" props="camps" />
     </div>
   );
 };

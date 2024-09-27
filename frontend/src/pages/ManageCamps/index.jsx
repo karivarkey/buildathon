@@ -52,7 +52,10 @@ const ManageCamps = () => {
         <h1 className="font-bold font-rubik text-center p2 shadow-lg text-3xl p-2">
           CAMPS
         </h1>
-        <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" style={{ maxHeight: "80vh", overflowY: "auto" }}>
+        <div
+          className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+          style={{ maxHeight: "80vh", overflowY: "auto" }}
+        >
           {Array.isArray(camps) && camps.length > 0 ? (
             camps.map((camp) => (
               <div
@@ -66,11 +69,14 @@ const ManageCamps = () => {
                 <p className="text-gray-700 mb-1">
                   <strong>Capacity:</strong> {camp.capacity}
                 </p>
-                <h3 className="text-lg font-semibold mt-2 mb-1">Requirements:</h3>
+                <h3 className="text-lg font-semibold mt-2 mb-1">
+                  Requirements:
+                </h3>
                 <ul className="list-disc list-inside text-gray-600">
                   {camp.requirements.map((req) => (
                     <li key={req._id}>
-                      <strong>{req.name}</strong>: {req.amount} - {req.description}
+                      <strong>{req.name}</strong>: {req.amount} -{" "}
+                      {req.description}
                     </li>
                   ))}
                 </ul>
@@ -87,7 +93,7 @@ const ManageCamps = () => {
           )}
         </div>
       </div>
-      <Navbar />
+      <Navbar props="adminCamp" />
       <button
         onClick={openCreateModal} // Open the create camp modal
         className="fixed bottom-16 right-6 bg-blue-500 text-white px-4 py-2 rounded-full shadow-lg hover:bg-blue-600 focus:outline-none"
