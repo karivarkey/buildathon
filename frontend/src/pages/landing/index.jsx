@@ -1,16 +1,15 @@
-import Map from "./components/map/map";
-import Navbar from "./components/Navbar.jsx";
+import React from 'react';
+import Maps from './components/map/map';
 
-export const Landing = () => {
+const App = () => {
   return (
-    <div className="relative h-screen w-screen">
-      {/* Fullscreen map */}
-      <Map />
+    
+    <div className='min-h-screen'>
+      <Maps />
       
-      {/* Navbar positioned at the bottom */}
-      <Navbar />
     </div>
+    
   );
-}
+};
 
-export default Landing;
+export default App;

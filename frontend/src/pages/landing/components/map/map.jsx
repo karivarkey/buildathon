@@ -1,37 +1,32 @@
-
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
-import L from 'leaflet';
-
-// Replace this with your custom icon path if needed
-const customIcon = new L.Icon({
-  iconUrl: 'path/to/your/icon.png', // Replace with your icon path if desired
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-});
-
-const Map = () => {
+import React from "react";
+import { Map, Marker, Overlay } from "pigeon-maps"; // Named imports from pigeon-maps
+import Navbar from "../../../../components/Navbar/Navbar";
+const Maps = () => {
   return (
-    <div style={{ height: '100vh', width: '100%' }}>
-      <MapContainer
-        center={[40.74157, -73.96851]} // Center the map on your desired location
-        zoom={13} // Set initial zoom level
-        scrollWheelZoom={false}
-        style={{ height: '100%', width: '100%' }}
+    <div className="min-h-screen">
+    
+    
+      <Map
+        center={[40.74157, -73.96851]} // Coordinates for map center
+        zoom={12} // Initial zoom level
+        height="93vh" // Make the map take up 100% height of the parent
+        width="100%" // Ensure full width as well
       >
-        <TileLayer
-          url="https://api.mapbox.com/styles/v1/karivarkey/cm1kfdqm700gg01qr0s1716w4/tiles/{z}/{x}/{y}?access_token=pk.eyJ1Ijoia2FyaXZhcmtleSIsImEiOiJjbHE2eGo4MnUwY2ZvMmpueGw3emdheWlsIn0.onksKbtF2ua4Nk8cyoA_JQ" // Replace with your style URL
-          attribution='&copy; '
+        {/* Example Marker */}
+        <Marker
+          anchor={[40.74157, -73.96851]}
+          payload={1}
+          onClick={() => alert("Marker clicked!")}
         />
-        <Marker position={[40.74157, -73.96851]} icon={customIcon}>
-          <Popup>
-            A pretty CSS3 popup. <br /> Easily customizable.
-          </Popup>
-        </Marker>
-      </MapContainer>
+
+
+
+      </Map>
+      <div className="h-max ">
+        <Navbar />
+      </div>
     </div>
   );
 };
 
-export default Map;
+export default Maps;
