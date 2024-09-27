@@ -6,7 +6,7 @@ const CustomModal = ({ isOpen, onClose, location }) => {
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="bg-white rounded-lg shadow-lg p-6 w-1/3 z-60">
+      <div className="bg-white rounded-lg shadow-lg p-6 w-2/3 z-60">
         <h2 className="text-xl font-semibold mb-2">{location.name}</h2>
         <p>
           <strong>Latitude:</strong> {location.latitude}

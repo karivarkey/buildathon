@@ -16,12 +16,7 @@ const mongoURI = process.env.MONGO_URI;
 const app = express();
 const PORT = process.env.PORT || 3001;
 app.use(
-  cors({
-    origin: "http://localhost:3000", // Replace with your client’s origin
-    methods: ["GET", "POST"], // Allowed HTTP methods
-    allowedHeaders: ["Content-Type", "Authorization"], // Allowed headers
-  })
-);
+cors());
 
 // Middleware to parse JSON requests
 app.use(express.json());
@@ -190,14 +185,21 @@ app.post("/camp/add", async (req, res) => {
 });
 
 // PUT endpoint to edit an existing camp using its _id
-app.put("/camp/edit", async (req, res) => {
+app.patch("/camp/edit", async (req, res) => {
   try {
     const { id, name, address, capacity, requirements } = req.body; // Use id as the MongoDB _id
+
+    // Create an update object, only including fields that were provided
+    const updateData = {};
+    if (name !== undefined) updateData.name = name;
+    if (address !== undefined) updateData.address = address;
+    if (capacity !== undefined) updateData.capacity = capacity;
+    if (requirements !== undefined) updateData.requirements = requirements;
 
     // Find the camp by _id and update it with the new data
     const updatedCamp = await Camp.findByIdAndUpdate(
       id, // Use the _id field for the query
-      { name, address, capacity, requirements },
+      updateData,
       { new: true, runValidators: true } // Return the updated document
     );
 
@@ -217,6 +219,7 @@ app.put("/camp/edit", async (req, res) => {
       .json({ message: "Error updating camp data", error: error.message });
   }
 });
+
 
 app.get("/camp/all", async (req, res) => {
   try {

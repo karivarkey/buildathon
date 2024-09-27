@@ -1,24 +1,21 @@
-const mongoose = require("mongoose");
-const { v4: uuidv4 } = require("uuid");
-
-// Define the schema
+const mongoose = require('mongoose')
 const campSchema = new mongoose.Schema({
   name: { type: String, required: true },
   address: { type: String, required: true },
   capacity: { type: Number, required: true },
-  latitude: { type: Number, required: true }, // Added latitude field
-  longitude: { type: Number, required: true }, // Added longitude field
-  requirements: [
-    {
-      name: { type: String, required: true },
-      amount: { type: Number, required: true },
-      description: { type: String, required: true },
-    },
-  ],
+  latitude: { type: Number, required: true },
+  longitude: { type: Number, required: true },
+  requirements: {
+    type: [
+      {
+        name: { type: String, required: true },
+        amount: { type: Number, required: true },
+        description: { type: String, required: true },
+      },
+    ],
+    default: null, // Allows the requirements to be null
+  },
 });
 
-// Create the model
-const Camp = mongoose.model("Camp", campSchema);
-
-// Export the model
-module.exports = Camp;
+const Camp = mongoose.model("Camp",campSchema)
+module.exports = Camp
