@@ -361,6 +361,39 @@ app.get("/disease/all", async (req, res) => {
   }
 });
 
+app.get("/disease/largest", async (req, res) => {
+  try {
+    // Fetch all diseases from the database
+    const diseases = await Disease.find();
+
+    // Check if diseases are found
+    if (diseases.length === 0) {
+      return res.status(404).json({ message: "No diseases found" });
+    }
+
+    // Find the disease with the largest number of cases
+    const largestDisease = diseases.reduce((max, disease) => {
+      return disease.number > max.number ? disease : max;
+    }, diseases[0]); // Initialize with the first disease
+
+    // Send a success response with the disease with the largest number
+    res.status(200).json({
+      message:
+        "Disease with the largest number of cases retrieved successfully",
+      data: largestDisease,
+    });
+  } catch (error) {
+    console.error(
+      "Error retrieving disease with the largest number of cases:",
+      error
+    );
+    res.status(500).json({
+      message: "Error retrieving disease with the largest number of cases",
+      error: error.message,
+    });
+  }
+});
+
 mongoose
   .connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => {
