@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Map, Marker } from "pigeon-maps"; // Named imports from pigeon-maps
 import Navbar from "../../../../components/Navbar/Navbar";
 import SearchBar from "./Searchbar";
+import axios from "axios"; // Import Axios for making HTTP requests
 
 const Maps = () => {
   // State to hold user's current location
@@ -27,6 +28,24 @@ const Maps = () => {
     }
   }, []);
 
+  // Function to handle SOS button click
+  const handleSOS = async () => {
+    try {
+      // Send the user's current location to the backend
+      const response = await axios.post("http://localhost:5000/api/sos", {
+        location: {
+          latitude: userLocation[0],
+          longitude: userLocation[1],
+        },
+      });
+      alert("SOS sent!"); // Show an alert on successful SOS send
+      console.log(response.data);
+    } catch (error) {
+      console.error("Error sending SOS:", error);
+      alert("Failed to send SOS");
+    }
+  };
+
   return (
     <div className="relative max-h-16">
       {/* Wrapping SearchBar with a div to apply absolute positioning */}
@@ -51,6 +70,15 @@ const Maps = () => {
       <div className="h-max">
         <Navbar />
       </div>
+
+      {/* SOS Button */}
+      <button
+        onClick={handleSOS}
+        className="absolute right-4 top-12
+         transform -translate-y-1/2 bg-red-500 text-white px-4 py-2 rounded-full shadow-lg hover:bg-red-600 focus:outline-none"
+      >
+        SOS
+      </button>
     </div>
   );
 };
