@@ -70,9 +70,14 @@ const PenguinMap = ({ locations }) => {
           touchZoom={true}
           dragging={true}
         >
-          <TileLayer
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+
+
+<TileLayer
+            // Use Mapbox custom tiles URL with your custom style ID
+            url="https://api.mapbox.com/styles/v1/karivarkey/cm1kfdqm700gg01qr0s1716w4/tiles/{z}/{x}/{y}?access_token=pk.eyJ1Ijoia2FyaXZhcmtleSIsImEiOiJjbHE2eGo4MnUwY2ZvMmpueGw3emdheWlsIn0.onksKbtF2ua4Nk8cyoA_JQ"
+            attribution='&copy; <a href="https://www.mapbox.com/about/maps/">Mapbox</a> contributors'
+            tileSize={512}
+            zoomOffset={-1}
           />
 
           {locations.map((location, index) => (

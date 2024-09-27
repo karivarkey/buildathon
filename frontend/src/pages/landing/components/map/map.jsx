@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Map, Marker } from "pigeon-maps"; // Named imports from pigeon-maps
+import { Map, Marker } from "pigeon-maps"; // Remove CustomOverlay
 import Navbar from "../../../../components/Navbar/Navbar";
 import SearchBar from "./Searchbar";
 import axios from "axios"; // Import Axios for making HTTP requests
@@ -46,6 +46,11 @@ const Maps = () => {
     }
   };
 
+  // Custom tile provider for Mapbox
+  const mapboxTileProvider = (x, y, z) => {
+    return `https://api.mapbox.com/styles/v1/karivarkey/cm1kfdqm700gg01qr0s1716w4/tiles/${z}/${x}/${y}?access_token=pk.eyJ1Ijoia2FyaXZhcmtleSIsImEiOiJjbHE2eGo4MnUwY2ZvMmpueGw3emdheWlsIn0.onksKbtF2ua4Nk8cyoA_JQ`;
+  };
+
   return (
     <div className="relative max-h-16">
       {/* Wrapping SearchBar with a div to apply absolute positioning */}
@@ -58,8 +63,8 @@ const Maps = () => {
         zoom={18} // Initial zoom level
         height="93vh" // Make the map take up 100% height of the parent
         width="100%" // Ensure full width as well
+        provider={mapboxTileProvider} // Use custom Mapbox tiles via tileProvider
       >
-        {/* User's current location marker */}
         <Marker
           anchor={userLocation} // Pin location is user's current location
           payload={1}
