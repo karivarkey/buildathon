@@ -3,7 +3,9 @@ const express = require("express");
 const axios = require("axios");
 const mongoose = require("mongoose");
 const Camp = require("./models/camp");
+const Disease = require("./models/disease");
 const { v4: uuidv4 } = require('uuid');
+const cors = require("cors"); // Import the cors package
 //get MONGO_URI from .env file
 require("dotenv").config();
 
@@ -13,7 +15,7 @@ require("dotenv").config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
-
+app.use(cors());
 // Middleware to parse JSON requests
 app.use(express.json());
 
@@ -167,6 +169,32 @@ app.get("/camp/all", async (req, res) => {
       .json({ message: "Error retrieving camp data", error: error.message });
   }
 });
+
+
+app.post("/disease/add", async (req, res) => {
+    try {
+      const { name, date, severity, mortality, location } = req.body;
+  
+      // Create a new Disease document using the extracted data
+      const newDisease = new Disease({
+        name,
+        date,
+        severity,
+        mortality,
+        location,
+      });
+  
+      // Save the new Disease document to the database
+      await newDisease.save();
+  
+      // Send a success response
+      res.status(201).json({ message: "Disease added successfully", data: newDisease });
+    } catch (error) {
+      console.error("Error adding disease data:", error);
+      res.status(500).json({ message: "Error adding disease data", error: error.message });
+    }
+  });
+
 
 mongoose
   .connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
