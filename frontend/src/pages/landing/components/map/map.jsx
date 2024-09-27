@@ -1,10 +1,11 @@
 import React from "react";
-import { Map, Marker, Overlay } from "pigeon-maps"; // Named imports from pigeon-maps
+import { Map, Marker } from "pigeon-maps"; // Named imports from pigeon-maps
 import Navbar from "../../../../components/Navbar/Navbar";
+import SearchBar from "./Searchbar";
 const Maps = () => {
   return (
     <div className="min-h-screen">
-    
+     <SearchBar/>
     
       <Map
         center={[40.74157, -73.96851]} // Coordinates for map center
