@@ -1,13 +1,15 @@
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
+import CustomModal from "./../modal/popup";
+import React from "react";
 
-// Import the marker icons using ES6 imports
+// Import marker icons
 import markerIcon from "leaflet/dist/images/marker-icon.png";
 import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
 import markerShadow from "leaflet/dist/images/marker-shadow.png";
 
-// Fix the default marker icon
+// Fix default marker icon
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: markerIcon2x,
@@ -15,30 +17,85 @@ L.Icon.Default.mergeOptions({
   shadowUrl: markerShadow,
 });
 
+// Custom marker icon size
+const customMarkerIcon = new L.Icon({
+  iconUrl: markerIcon,
+  iconSize: [38, 95],
+  iconAnchor: [22, 94],
+  popupAnchor: [-3, -76],
+  shadowUrl: markerShadow,
+  shadowSize: [68, 95],
+  shadowAnchor: [22, 94],
+});
+
+// Component to fit map bounds
+const FitBounds = ({ locations }) => {
+  const map = useMap();
+  const positions = locations.map((location) => [
+    location.latitude,
+    location.longitude,
+  ]);
+
+  if (positions.length > 0) {
+    const bounds = L.latLngBounds(positions);
+    map.fitBounds(bounds);
+  }
+
+  return null; // No rendering required
+};
+
 const PenguinMap = ({ locations }) => {
-  // Set a default position (for example, the center of the map)
   const defaultPosition = [0, 0];
+  const [selectedLocation, setSelectedLocation] = React.useState(null);
+  const [modalOpen, setModalOpen] = React.useState(false);
+
+  const handleMarkerClick = (location) => {
+    setSelectedLocation(location);
+    setModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setModalOpen(false);
+    setSelectedLocation(null);
+  };
 
   return (
-    <MapContainer
-      center={defaultPosition}
-      zoom={18}
-      style={{ height: "100vh", width: "100%" }}
-    >
-      <TileLayer
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    <>
+      {/* Conditionally render the map */}
+      {!modalOpen && (
+        <MapContainer
+          center={defaultPosition}
+          zoom={2}
+          style={{ height: "100vh", width: "100%" }}
+          touchZoom={true}
+          dragging={true}
+        >
+          <TileLayer
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          />
+
+          {locations.map((location, index) => (
+            <Marker
+              key={index}
+              position={[location.latitude, location.longitude]}
+              icon={customMarkerIcon}
+              eventHandlers={{
+                click: () => handleMarkerClick(location),
+              }}
+            />
+          ))}
+
+          <FitBounds locations={locations} />
+        </MapContainer>
+      )}
+
+      <CustomModal
+        isOpen={modalOpen}
+        onClose={closeModal}
+        location={selectedLocation}
       />
-      {locations.map((location, index) => (
-        <Marker key={index} position={[location.latitude, location.longitude]}>
-          <Popup>
-            <strong>Location:</strong>
-            <br />
-            Latitude: {location.latitude}, Longitude: {location.longitude}
-          </Popup>
-        </Marker>
-      ))}
-    </MapContainer>
+    </>
   );
 };
 
