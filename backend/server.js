@@ -7,6 +7,7 @@ const Disease = require("./models/disease");
 const { v4: uuidv4 } = require("uuid");
 const cors = require("cors"); // Import the cors package
 const NewsAPI = require("newsapi");
+const SOSCall = require("./models/sos");
 
 //get MONGO_URI from .env file
 require("dotenv").config();
@@ -15,8 +16,7 @@ const mongoURI = process.env.MONGO_URI;
 
 const app = express();
 const PORT = process.env.PORT || 3001;
-app.use(
-cors());
+app.use(cors());
 
 // Middleware to parse JSON requests
 app.use(express.json());
@@ -60,6 +60,61 @@ app.get("/api/geocode", async (req, res) => {
   }
 });
 
+app.post("/api/sos", async (req, res) => {
+  const { latitude, longitude } = req.body;
+
+  // Validate input
+  if (!latitude || !longitude) {
+    return res
+      .status(400)
+      .json({ error: "Latitude and longitude are required." });
+  }
+
+  try {
+    // Reverse geocode the latitude and longitude
+    const response = await axios.get(
+      "https://nominatim.openstreetmap.org/reverse",
+      {
+        params: {
+          lat: latitude,
+          lon: longitude,
+          format: "json",
+          addressdetails: 1,
+        },
+        headers: {
+          "User-Agent": "MyGeocodingApp/1.0 (myemail@example.com)", // Replace with your app name and email
+        },
+      }
+    );
+
+    if (!response.data) {
+      return res
+        .status(404)
+        .json({ error: "No results found for the provided coordinates." });
+    }
+
+    // Extract the address and set it as the name
+    const name = response.data.display_name; // You can customize this based on your needs
+
+    // Create a new SOS Call
+    const sosCall = new SOSCall({
+      name,
+      latitude,
+      longitude,
+      location: name, // Save the reverse geocoded location
+    });
+
+    // Save the SOS call to the database
+    await sosCall.save();
+
+    res.status(201).json(sosCall);
+  } catch (error) {
+    console.error("Error during SOS call processing:", error);
+    res
+      .status(500)
+      .json({ error: "An error occurred while processing the SOS call." });
+  }
+});
 // Route for reverse geocoding
 app.get("/api/reverse", async (req, res) => {
   const { lat, lon } = req.query;
@@ -219,7 +274,6 @@ app.patch("/camp/edit", async (req, res) => {
       .json({ message: "Error updating camp data", error: error.message });
   }
 });
-
 
 app.get("/camp/all", async (req, res) => {
   try {

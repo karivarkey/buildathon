@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Navbar from "../../../../components/Navbar/Navbar";
+import { ThreeDots } from "react-loader-spinner"; // Import specific loader component
 
 const News = () => {
   const disease = "covid-19"; // Disease to fetch news about
@@ -10,10 +11,12 @@ const News = () => {
 
   // State to store news articles
   const [articles, setArticles] = useState([]);
+  const [loading, setLoading] = useState(true); // State for loading
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setLoading(true); // Set loading to true before fetching data
         // API call to the News API
         const response = await axios.get("https://newsapi.org/v2/everything", {
           params: {
@@ -27,6 +30,8 @@ const News = () => {
         setArticles(response.data.articles);
       } catch (error) {
         console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false); // Set loading to false after data fetching is complete
       }
     };
 
@@ -41,7 +46,6 @@ const News = () => {
       style={{ maxHeight: "max(dvh, 100vh)" }}
     >
       <div className="flex-1 p-2 overflow-hidden">
-        {" "}
         {/* Allow scrolling in this area */}
         <div className="font-rubik font-bold text-4xl shadow-2xl p-5 rounded-xl flex w-full justify-between">
           <div>
@@ -63,15 +67,20 @@ const News = () => {
             </div>
           </div>
         </div>
-        {/* Render news articles */}
+
+        {/* Render loading animation or news articles */}
         <div className="mt-5" style={{ maxHeight: "80vh", overflowY: "auto" }}>
-          {" "}
           {/* Make this div scrollable */}
           <h2 className="text-2xl font-bold overflow-y-hidden">
             Latest Articles
           </h2>
           <div className="mt-2">
-            {articles.length > 0 ? (
+            {loading ? ( // Show loading animation while fetching
+              <div className="flex items-center justify-center h-40">
+                <ThreeDots color="#000000" height={80} width={80} />{" "}
+                {/* Using ThreeDots component */}
+              </div>
+            ) : articles.length > 0 ? (
               articles.map((article, index) => (
                 <div
                   key={index}
@@ -95,8 +104,7 @@ const News = () => {
           </div>
         </div>
       </div>
-      <div className="absolute bottom-0 w-full">
-        {" "}
+      <div className="absolute bottom-0 w-full bg-white">
         {/* Use relative positioning */}
         <Navbar props="news" /> {/* Always visible at the bottom */}
       </div>

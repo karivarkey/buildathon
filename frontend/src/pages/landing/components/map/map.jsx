@@ -35,10 +35,8 @@ const Maps = () => {
     try {
       // Send the user's current location to the backend
       const response = await axios.post("http://localhost:3001/api/sos", {
-        location: {
-          latitude: userLocation[0],
-          longitude: userLocation[1],
-        },
+        latitude: userLocation[0],
+        longitude: userLocation[1],
       });
       alert("SOS sent!"); // Show an alert on successful SOS send
       console.log(response.data);
