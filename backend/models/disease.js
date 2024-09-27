@@ -8,6 +8,7 @@ const diseaseSchema = new mongoose.Schema({
   severity: { type: String, required: true }, // You can also use an Enum if you have specific severity levels
   mortality: { type: Number, required: true }, // Percentage or number
   location: { type: String, required: true },
+  number : { type: Number, required: true },
 });
 
 // Create the Disease model

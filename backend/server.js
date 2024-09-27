@@ -170,31 +170,70 @@ app.get("/camp/all", async (req, res) => {
   }
 });
 
-
 app.post("/disease/add", async (req, res) => {
     try {
       const { name, date, severity, mortality, location } = req.body;
   
-      // Create a new Disease document using the extracted data
-      const newDisease = new Disease({
-        name,
-        date,
-        severity,
-        mortality,
+      // Find the existing disease by name and location (case-insensitive search)
+      const existingDisease = await Disease.findOne({
+        name: { $regex: new RegExp(`^${name}$`, 'i') },
         location,
       });
   
-      // Save the new Disease document to the database
-      await newDisease.save();
+      let disease;
   
-      // Send a success response
-      res.status(201).json({ message: "Disease added successfully", data: newDisease });
+      if (existingDisease) {
+        // If disease exists, increment the number field by 1
+        disease = await Disease.findOneAndUpdate(
+          { _id: existingDisease._id }, // Find by existing disease's _id
+          { $inc: { number: 1 } },      // Increment the number field
+          { new: true }                 // Return the updated document
+        );
+      } else {
+        // If no disease exists, create a new one with number set to 1
+        disease = new Disease({
+          name,
+          date,
+          severity,
+          mortality,
+          location,
+          number: 1,  // Start new disease with number 1, not 0
+        });
+        await disease.save(); // Save the new disease document
+      }
+  
+      // Send a success response with the updated disease
+      res.status(201).json({
+        message: existingDisease
+          ? "Existing disease updated successfully"
+          : "New disease added successfully",
+        data: disease,
+      });
     } catch (error) {
       console.error("Error adding disease data:", error);
       res.status(500).json({ message: "Error adding disease data", error: error.message });
     }
   });
-
+  
+  
+  app.get("/disease/all", async (req, res) => {
+    try {
+      // Fetch all diseases from the database
+      const diseases = await Disease.find();
+  
+      // Check if diseases are found
+      if (diseases.length === 0) {
+        return res.status(404).json({ message: "No diseases found" });
+      }
+  
+      // Send a success response with the list of diseases
+      res.status(200).json({ message: "Diseases retrieved successfully", data: diseases });
+    } catch (error) {
+      console.error("Error retrieving diseases:", error);
+      res.status(500).json({ message: "Error retrieving diseases", error: error.message });
+    }
+  });
+  
 
 mongoose
   .connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
