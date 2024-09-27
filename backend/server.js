@@ -128,15 +128,51 @@ app.get("/api/latest-epidemics", async (req, res) => {
     });
   }
 });
+
 app.post("/camp/add", async (req, res) => {
   try {
-    const { name, address, capacity, requirements } = req.body;
+    const { name, address, capacity, requirements, latitude, longitude } =
+      req.body;
+
+    // If latitude and longitude are not provided, perform reverse geocoding
+    let lat = latitude;
+    let lng = longitude;
+
+    if (!lat || !lng) {
+      // Make an API call to get latitude and longitude using Nominatim
+      const response = await axios.get(
+        "https://nominatim.openstreetmap.org/search",
+        {
+          params: {
+            q: address,
+            format: "json",
+            addressdetails: 1,
+          },
+          headers: {
+            "User-Agent": "MyGeocodingApp/1.0 (myemail@example.com)", // Replace with your app name and email
+          },
+        }
+      );
+
+      // Check if we got results
+      if (response.data.length > 0) {
+        const result = response.data[0];
+        lat = result.lat;
+        lng = result.lon;
+      } else {
+        return res.status(404).json({
+          message: "Unable to find coordinates for the given address.",
+        });
+      }
+    }
 
     // Create a new Camp document using the extracted data
     const newCamp = new Camp({
       name,
       address,
       capacity,
+      latitude: lat,
+      longitude: lng,
       requirements,
     });
 

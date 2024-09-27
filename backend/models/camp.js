@@ -6,6 +6,8 @@ const campSchema = new mongoose.Schema({
   name: { type: String, required: true },
   address: { type: String, required: true },
   capacity: { type: Number, required: true },
+  latitude: { type: Number, required: true }, // Added latitude field
+  longitude: { type: Number, required: true }, // Added longitude field
   requirements: [
     {
       name: { type: String, required: true },
