@@ -1,10 +1,12 @@
 import React from 'react';
 import Maps from './components/map/map';
+import News from './components/news';
 
 const App = () => {
   return (
     
-    <div className='min-h-screen'>
+    <div className='max-h-screen'>
+
       <Maps />
       
     </div>

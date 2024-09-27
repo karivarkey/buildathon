@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "axios": "^1.7.7",
     "inferno": "^8.2.3",
     "inferno-component": "^7.4.11",
     "leaflet": "^1.9.4",
@@ -18,6 +19,7 @@
     "pigeon-overlay": "^0.2.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-icons": "^5.3.0",
     "react-leaflet": "^4.2.1",
     "react-router-dom": "^6.26.2"
   },
