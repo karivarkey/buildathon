@@ -1,4 +1,4 @@
-import React from "react";
+
 import { useNavigate } from "react-router-dom";
 import map from "./assets/map.svg";
 import medicine from "./assets/medicine.svg";
@@ -9,7 +9,7 @@ function Navbar() {
   const navigate = useNavigate();
 
   return (
-    <div className="align-middle shadow-inner flex items-center justify-around h-max p-4">
+    <div className="align-middle shadow-inner flex items-center justify-around  p-4">
       <button
         onClick={() => navigate("/map")}
         className="hover:scale-110 transition-transform"
@@ -17,7 +17,7 @@ function Navbar() {
         <img src={map} alt="Map" />
       </button>
       <button
-        onClick={() => navigate("/medicine")}
+        onClick={() => navigate("/news")}
         className="hover:scale-110 transition-transform"
       >
         <img src={medicine} alt="Medicine" />

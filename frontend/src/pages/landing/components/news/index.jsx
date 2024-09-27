@@ -1,42 +1,63 @@
-import { useState } from "react";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 
+import Navbar from "../../../../components/Navbar/Navbar";
 const News = () => {
-  // States to store information about disease, cases, deaths, and suggested cures
-  const [diseaseName, setDiseaseName] = useState("Influenza");
-  const [cases, setCases] = useState(15000);
-  const [deaths, setDeaths] = useState(250);
-  const [cures, setCures] = useState([
-    { id: 1, text: "Rest and fluids" },
-    { id: 2, text: "Antiviral medication" },
-    { id: 3, text: "Fever reducers" },
-  ]);
+  const disease = "covid-19";
+  const location = "nigeria";
+  const reportedCases = 100;
+  const deathCases = 10;
+
+  //useEffect use axios to make an api call and use State to store the response.data
+  //use the state to display the data
+
+  const [data, setData] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:3001/api/latest-epidemics"
+        );
+        setData(response.data);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  console.log(data);
 
   return (
-    <div className="bg-white w-full max-w-4xl mx-auto my-8 p-6 shadow-lg rounded-lg">
-      {/* Header */}
-      <div className="bg-white w-full py-4 shadow-md mb-6">
-        <h1 className="text-3xl font-bold text-center text-gray-800">
-          Disease Outbreak Report
-        </h1>
-      </div>
-
-      {/* Disease Information */}
-      <div className="text-gray-800 text-lg mb-4">
-        <p><strong>Disease Name:</strong> {diseaseName}</p>
-        <p><strong>Number of Cases:</strong> {cases}</p>
-        <p><strong>Number of Deaths:</strong> {deaths}</p>
-      </div>
-
-      {/* Stats Section */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {cures.map((cure) => (
-          <div
-            key={cure.id}
-            className="p-4 border rounded-lg shadow-sm bg-gray-50"
-          >
-            <p className="text-gray-700 text-center">{cure.text}</p>
+    <div className="min-h-screen flex justify-between flex-col">
+      <div className="p-2">
+        <div>
+          <div className="font-rubik font-bold text-4xl shadow-2xl p-5 rounded-xl flex w-full justify-between">
+            <div>
+              <p>{disease.toUpperCase()}</p>
+              <h6 className="font-rubic font-light text-lg ">
+                {location.toUpperCase()}
+              </h6>
+            </div>
+            <div>
+              <div className="flex gap-10">
+                <div className="text-center">
+                  <h6>{reportedCases}</h6>
+                  <h6 className="text-lg text-[#f35900]">REPORTED</h6>
+                </div>
+                <div className="text-center">
+                  <h6>{deathCases}</h6>
+                  <h6 className="text-lg text-[#ff0000]">DEATHS</h6>
+                </div>
+              </div>
+            </div>
           </div>
-        ))}
+        </div>
+      </div>
+      <div>
+        <Navbar />
       </div>
     </div>
   );

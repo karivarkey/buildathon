@@ -4,19 +4,27 @@ const axios = require("axios");
 const mongoose = require("mongoose");
 const Camp = require("./models/camp");
 const Disease = require("./models/disease");
-const { v4: uuidv4 } = require('uuid');
+const { v4: uuidv4 } = require("uuid");
 const cors = require("cors"); // Import the cors package
+const NewsAPI = require("newsapi");
+
 //get MONGO_URI from .env file
 require("dotenv").config();
 
 const mongoURI = process.env.MONGO_URI;
 
-require("dotenv").config();
-
 const app = express();
 const PORT = process.env.PORT || 3001;
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:3000", // Replace with your client’s origin
+    methods: ["GET", "POST"], // Allowed HTTP methods
+    allowedHeaders: ["Content-Type", "Authorization"], // Allowed headers
+  })
+);
+
 // Middleware to parse JSON requests
+app.use(express.json());
 app.use(express.json());
 
 // Route for geocoding an address
@@ -96,16 +104,36 @@ app.get("/api/reverse", async (req, res) => {
   }
 });
 
+const NEWS_API_KEY = "5e0769b62ed044efa93bee69c0042e86";
+
+app.get("/api/latest-epidemics", async (req, res) => {
+  try {
+    // Make a call to the News API to fetch latest epidemics
+    const response = await axios.get("https://newsapi.org/v2/everything", {
+      params: {
+        q: "Technology", // Search query
+        language: "en", // Specify the language
+
+        apiKey: NEWS_API_KEY, // Your News API key
+      },
+    });
+
+    // Send the response from the News API back to the client
+    res.status(200).json(response.data);
+  } catch (error) {
+    console.error("Error fetching latest epidemics:", error.message);
+    res.status(500).json({
+      message: "Error fetching latest epidemics",
+      error: error.message,
+    });
+  }
+});
 app.post("/camp/add", async (req, res) => {
   try {
     const { name, address, capacity, requirements } = req.body;
 
-    // Generate a unique ID for the camp
-    const uniqueId = uuidv4(); // Generate a new unique ID
-
     // Create a new Camp document using the extracted data
     const newCamp = new Camp({
-      uniqueId,
       name,
       address,
       capacity,
@@ -125,15 +153,16 @@ app.post("/camp/add", async (req, res) => {
   }
 });
 
+// PUT endpoint to edit an existing camp using its _id
 app.put("/camp/edit", async (req, res) => {
   try {
-    const { id, name, address, capacity, requirements } = req.body; // Change uniqueId to id
+    const { id, name, address, capacity, requirements } = req.body; // Use id as the MongoDB _id
 
     // Find the camp by _id and update it with the new data
     const updatedCamp = await Camp.findByIdAndUpdate(
       id, // Use the _id field for the query
       { name, address, capacity, requirements },
-      { new: true, runValidators: true }
+      { new: true, runValidators: true } // Return the updated document
     );
 
     // Check if the camp was found and updated
@@ -171,69 +200,73 @@ app.get("/camp/all", async (req, res) => {
 });
 
 app.post("/disease/add", async (req, res) => {
-    try {
-      const { name, date, severity, mortality, location } = req.body;
-  
-      // Find the existing disease by name and location (case-insensitive search)
-      const existingDisease = await Disease.findOne({
-        name: { $regex: new RegExp(`^${name}$`, 'i') },
+  try {
+    const { name, date, severity, mortality, location } = req.body;
+
+    // Find the existing disease by name and location (case-insensitive search)
+    const existingDisease = await Disease.findOne({
+      name: { $regex: new RegExp(`^${name}$`, "i") },
+      location,
+    });
+
+    let disease;
+
+    if (existingDisease) {
+      // If disease exists, increment the number field by 1
+      disease = await Disease.findOneAndUpdate(
+        { _id: existingDisease._id }, // Find by existing disease's _id
+        { $inc: { number: 1 } }, // Increment the number field
+        { new: true } // Return the updated document
+      );
+    } else {
+      // If no disease exists, create a new one with number set to 1
+      disease = new Disease({
+        name,
+        date,
+        severity,
+        mortality,
         location,
+        number: 1, // Start new disease with number 1, not 0
       });
-  
-      let disease;
-  
-      if (existingDisease) {
-        // If disease exists, increment the number field by 1
-        disease = await Disease.findOneAndUpdate(
-          { _id: existingDisease._id }, // Find by existing disease's _id
-          { $inc: { number: 1 } },      // Increment the number field
-          { new: true }                 // Return the updated document
-        );
-      } else {
-        // If no disease exists, create a new one with number set to 1
-        disease = new Disease({
-          name,
-          date,
-          severity,
-          mortality,
-          location,
-          number: 1,  // Start new disease with number 1, not 0
-        });
-        await disease.save(); // Save the new disease document
-      }
-  
-      // Send a success response with the updated disease
-      res.status(201).json({
-        message: existingDisease
-          ? "Existing disease updated successfully"
-          : "New disease added successfully",
-        data: disease,
-      });
-    } catch (error) {
-      console.error("Error adding disease data:", error);
-      res.status(500).json({ message: "Error adding disease data", error: error.message });
+      await disease.save(); // Save the new disease document
     }
-  });
-  
-  
-  app.get("/disease/all", async (req, res) => {
-    try {
-      // Fetch all diseases from the database
-      const diseases = await Disease.find();
-  
-      // Check if diseases are found
-      if (diseases.length === 0) {
-        return res.status(404).json({ message: "No diseases found" });
-      }
-  
-      // Send a success response with the list of diseases
-      res.status(200).json({ message: "Diseases retrieved successfully", data: diseases });
-    } catch (error) {
-      console.error("Error retrieving diseases:", error);
-      res.status(500).json({ message: "Error retrieving diseases", error: error.message });
+
+    // Send a success response with the updated disease
+    res.status(201).json({
+      message: existingDisease
+        ? "Existing disease updated successfully"
+        : "New disease added successfully",
+      data: disease,
+    });
+  } catch (error) {
+    console.error("Error adding disease data:", error);
+    res
+      .status(500)
+      .json({ message: "Error adding disease data", error: error.message });
+  }
+});
+
+app.get("/disease/all", async (req, res) => {
+  try {
+    // Fetch all diseases from the database
+    const diseases = await Disease.find();
+
+    // Check if diseases are found
+    if (diseases.length === 0) {
+      return res.status(404).json({ message: "No diseases found" });
     }
-  });
-  
+
+    // Send a success response with the list of diseases
+    res
+      .status(200)
+      .json({ message: "Diseases retrieved successfully", data: diseases });
+  } catch (error) {
+    console.error("Error retrieving diseases:", error);
+    res
+      .status(500)
+      .json({ message: "Error retrieving diseases", error: error.message });
+  }
+});
 
 mongoose
   .connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
@@ -243,7 +276,6 @@ mongoose
   .catch((err) => {
     console.error("MongoDB connection error:", err);
   });
-
 // Start the server
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
