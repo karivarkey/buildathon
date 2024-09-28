@@ -8,10 +8,10 @@ import locationMarker from "./assets/marker.svg";
 const Maps = () => {
   const [userLocation, setUserLocation] = useState([40.74157, -73.96851]);
   const [isSOSActive, setIsSOSActive] = useState(false);
-  const RADIUS_IN_KM = 1; // Radius of the circle in kilometers
-  const CIRCLE_POINTS = 36; // Number of points to create the circle
+  const [circles, setCircles] = useState([]); // To hold circle data fetched from API
 
   useEffect(() => {
+    // Get user location
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -25,10 +25,37 @@ const Maps = () => {
     } else {
       console.error("Geolocation is not supported by this browser.");
     }
+
+    // Fetch circle data from API
+    fetchCircleData();
   }, []);
 
+  // Function to fetch circle data from the API
+  const fetchCircleData = async () => {
+    try {
+      const response = await axios.get("http://localhost:3001/api/alerts"); // Change URL as needed
+      setCircles(response.data); // Assuming response.data is the array of circles
+    } catch (error) {
+      console.error("Error fetching circle data:", error);
+    }
+    console.log(circles);
+  };
+
   const handleSOS = async () => {
-    // SOS implementation...
+    try {
+      console.log(userLocation);
+      // Send the user's current location to the backend
+      const response = await axios.post("http://localhost:3001/api/sos", {
+        latitude: userLocation[0],
+        longitude: userLocation[1],
+      });
+      alert("SOS sent!"); // Show an alert on successful SOS send
+      console.log(response.data);
+      setIsSOSActive(true);
+    } catch (error) {
+      console.error("Error sending SOS:", error);
+      alert("Failed to send SOS");
+    }
   };
 
   const mapboxTileProvider = (x, y, z) => {
@@ -36,16 +63,15 @@ const Maps = () => {
   };
 
   // Function to generate circle coordinates
-  const generateCircleCoords = (center, radius, points) => {
+  const generateCircleCoords = (center, radius, points = 36) => {
     const coords = [];
     const [lat, lng] = center;
 
     for (let i = 0; i < points; i++) {
-      const angle = (i / points) * (2 * Math.PI); // Full circle in radians
-      const dx = radius * Math.cos(angle); // Change in x (longitude)
-      const dy = radius * Math.sin(angle); // Change in y (latitude)
+      const angle = (i / points) * (2 * Math.PI);
+      const dx = radius * Math.cos(angle);
+      const dy = radius * Math.sin(angle);
 
-      // Convert the radius in km to degrees
       const newLat = lat + dy / 110.574; // 1 degree latitude ~ 110.574 km
       const newLng = lng + dx / (111.32 * Math.cos((lat * Math.PI) / 180)); // 1 degree longitude ~ 111.32 km * cos(latitude)
 
@@ -54,13 +80,6 @@ const Maps = () => {
 
     return coords;
   };
-
-  // Get the circle coordinates
-  const circleCoords = generateCircleCoords(
-    userLocation,
-    RADIUS_IN_KM,
-    CIRCLE_POINTS
-  );
 
   return (
     <div className="flex flex-col h-screen">
@@ -84,24 +103,32 @@ const Maps = () => {
             <img src={locationMarker} alt="Location Marker" />
           </Marker>
 
-          {/* Render the circle using the Line component */}
-          <Line
-            mapState={{ width: 800, height: 600 }} // Set appropriate dimensions for your map
-            latLngToPixel={(coords) => {
-              const [lat, lng] = coords;
-              // You may need to implement this function based on your map implementation
-              // Here is a basic implementation for converting latLng to pixel coordinates:
-              const x = ((lng + 180) / 360) * 800; // Adjust these calculations based on your map's scale
-              const y = ((90 - lat) / 180) * 600;
-              return [x, y];
-            }}
-            coordsArray={circleCoords} // Pass the generated circle coordinates
-            style={{
-              stroke: "rgba(255, 0, 0, 0.5)",
-              strokeWidth: 2,
-              fill: "none",
-            }} // Circle style
-          />
+          {/* Render circles based on fetched data */}
+          {circles.map((circle, index) => {
+            const circleCoords = generateCircleCoords(
+              [circle.lattitude, circle.longitude],
+              circle.radius
+            );
+
+            return (
+              <Circle
+                key={index}
+                mapState={{ width: 800, height: 600 }}
+                latLngToPixel={(coords) => {
+                  const [lat, lng] = coords;
+                  const x = ((lng + 180) / 360) * 800;
+                  const y = ((90 - lat) / 180) * 600;
+                  return [x, y];
+                }}
+                coordsArray={circleCoords}
+                style={{
+                  fill: "rgba(0, 0, 255, 0.2)", // Blue color fill with some transparency
+                  stroke: "rgba(0, 0, 255, 0.5)", // Stroke color for the circle
+                  strokeWidth: 2,
+                }}
+              />
+            );
+          })}
         </Map>
 
         <div className="z-10 absolute bottom-0 w-full bg-white">
@@ -143,47 +170,23 @@ const Maps = () => {
     </div>
   );
 };
-// Update your Line component with better handling for NaN values
-const Line = ({
+
+// Circle component to render filled circles
+const Circle = ({
   mapState: { width, height },
   latLngToPixel,
   coordsArray,
-  style = { stroke: "rgb(255,0,0)", strokeWidth: 2, fill: "rgb(50,0,0)" },
+  style,
 }) => {
-  if (coordsArray.length < 2) {
-    return null;
-  }
+  if (coordsArray.length < 2) return null;
 
-  const lines = [];
-  let pixel = latLngToPixel(coordsArray[0]);
-
-  // Check if the initial pixel value is valid
-  if (!isFinite(pixel[0]) || !isFinite(pixel[1])) {
-    console.error("First pixel is NaN:", pixel);
-    return null; // Avoid rendering lines if the first pixel is invalid
-  }
-
-  for (let i = 1; i < coordsArray.length; i++) {
-    const pixel2 = latLngToPixel(coordsArray[i]);
-
-    // Ensure the second pixel is valid before drawing the line
-    if (!isFinite(pixel2[0]) || !isFinite(pixel2[1])) {
-      console.error("Second pixel is NaN:", pixel2);
-      continue; // Skip drawing this line segment if pixel is invalid
-    }
-
-    lines.push(
-      <line
-        key={i}
-        x1={pixel[0]}
-        y1={pixel[1]}
-        x2={pixel2[0]}
-        y2={pixel2[1]}
-        style={style}
-      />
-    );
-    pixel = pixel2;
-  }
+  const path =
+    coordsArray
+      .map((coord, index) => {
+        const [x, y] = latLngToPixel(coord);
+        return `${index === 0 ? "M" : "L"} ${x} ${y}`;
+      })
+      .join(" ") + " Z"; // Close the path
 
   return (
     <svg
@@ -191,21 +194,9 @@ const Line = ({
       height={height}
       style={{ top: 0, left: 0, position: "absolute", pointerEvents: "none" }}
     >
-      {lines}
+      <path d={path} style={style} />
     </svg>
   );
-};
-
-// Improve latLngToPixel function to handle edge cases
-const latLngToPixel = (coords) => {
-  const [lat, lng] = coords;
-  if (lat == null || lng == null) {
-    return [NaN, NaN]; // Return NaN for invalid coordinates
-  }
-  const x = ((lng + 180) / 360) * width; // Adjust these calculations based on your map's scale
-  const y = ((90 - lat) / 180) * height;
-
-  return [x, y];
 };
 
 export default Maps;

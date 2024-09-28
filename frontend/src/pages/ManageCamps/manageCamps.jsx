@@ -5,6 +5,7 @@ import Navbar from "../../components/Navbar/Navbar";
 import EditCampModal from "./EditCampModal"; // Import the modal for editing
 import CreateCampModal from "./createCampModal";
 import AddDiseaseModal from "./addDiseaseModal";
+import AlertModal from "./alertModel";
 
 const ManageCamps = () => {
   const navigate = useNavigate(); // Initialize navigate function
@@ -13,6 +14,8 @@ const ManageCamps = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false); // Modal open state for editing
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false); // Modal open state for creating
   const [isAddDiseaseModalOpen, setIsAddDiseaseModalOpen] = useState(false); // Modal state for adding disease
+  const [isAlertModalOpen, setIsAlertModalOpen] = useState(false); // Modal state for alerts
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false); // State for dropdown visibility
 
   useEffect(() => {
     fetchCamps();
@@ -30,10 +33,21 @@ const ManageCamps = () => {
       });
   };
 
+  // Open alert modal
+  const openAlertModal = () => {
+    setIsAlertModalOpen(true);
+    setIsDropdownOpen(false); // Close dropdown when opening modal
+  };
+
+  const closeAlertModal = () => {
+    setIsAlertModalOpen(false);
+  };
+
   // Open modal with selected camp details for editing
   const openEditModal = (camp) => {
     setSelectedCamp(camp);
     setIsEditModalOpen(true);
+    setIsDropdownOpen(false); // Close dropdown when opening modal
   };
 
   const closeEditModal = () => {
@@ -44,6 +58,7 @@ const ManageCamps = () => {
   // Open create camp modal
   const openCreateModal = () => {
     setIsCreateModalOpen(true);
+    setIsDropdownOpen(false); // Close dropdown when opening modal
   };
 
   const closeCreateModal = () => {
@@ -53,6 +68,7 @@ const ManageCamps = () => {
   // Open Add Disease modal
   const openAddDiseaseModal = () => {
     setIsAddDiseaseModalOpen(true);
+    setIsDropdownOpen(false); // Close dropdown when opening modal
   };
 
   const closeAddDiseaseModal = () => {
@@ -125,19 +141,44 @@ const ManageCamps = () => {
           )}
         </div>
       </div>
-      <Navbar props="adminCamp" />
-      <button
-        onClick={openCreateModal} // Open the create camp modal
-        className="fixed bottom-20 right-2 bg-blue-500 text-white px-4 py-2 rounded-full shadow-lg hover:bg-blue-600 focus:outline-none"
-      >
-        Create Camp
-      </button>
-      <button
-        onClick={openAddDiseaseModal} // Open the add disease modal
-        className="fixed bottom-20 left-2 bg-red-500 text-white px-4 py-2 rounded-full shadow-lg hover:bg-blue-600 focus:outline-none"
-      >
-        Record Disease
-      </button>
+      <div className="w-full absolute bottom-0">
+        <Navbar props="adminCamp" />
+      </div>
+
+      {/* Dropdown Button */}
+      <div className="relative">
+        <button
+          onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+          className="fixed bottom-20 right-2 bg-blue-500 text-white px-4 py-2 rounded-full shadow-lg hover:bg-blue-600 focus:outline-none"
+        >
+          Actions
+        </button>
+
+        {/* Dropdown Menu */}
+        {isDropdownOpen && (
+          <div className="absolute right-0 bottom-16 bg-white border border-gray-300 rounded shadow-lg z-50">
+            <button
+              onClick={openCreateModal}
+              className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+            >
+              Create Camp
+            </button>
+            <button
+              onClick={openAddDiseaseModal}
+              className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+            >
+              Record Disease
+            </button>
+            <button
+              onClick={openAlertModal}
+              className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+            >
+              Alert People
+            </button>
+          </div>
+        )}
+      </div>
+
       <button
         onClick={handleLogout} // Logout button
         className="fixed top-20 right-2 bg-red-500 text-white px-4 py-2 rounded-full shadow-lg hover:bg-red-600 focus:outline-none"
@@ -167,6 +208,13 @@ const ManageCamps = () => {
         isOpen={isAddDiseaseModalOpen}
         onClose={closeAddDiseaseModal}
         onSave={handleSaveDisease} // Function to handle disease saving
+      />
+
+      {/* Alert Modal */}
+      <AlertModal
+        isOpen={isAlertModalOpen}
+        onClose={closeAlertModal}
+        onSave={fetchCamps} // Refresh after saving an alert
       />
     </div>
   );
