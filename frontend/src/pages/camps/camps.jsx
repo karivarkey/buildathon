@@ -1,4 +1,4 @@
-import PenguinMap from "./compoenets/map/map";
+import PenguinMap from "./components/map/map";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import Navbar from "../../components/Navbar/Navbar";
@@ -27,7 +27,7 @@ const Camps = () => {
   return (
     <div className="max-h-dvh">
       <PenguinMap locations={camps} />
-      <Navbar className="absolute bottom-2 z-30" />
+      <Navbar className="absolute bottom-2 z-30" props="camps" />
     </div>
   );
 };

@@ -6,71 +6,95 @@ import axios from "axios";
 export const SearchBar = () => {
   const [input, setInput] = useState(""); // Holds the search input value
   const [results, setResults] = useState([]); // Holds the search results
+  const [isActive, setIsActive] = useState(false); // Tracks if the search bar is expanded
 
-  const fetchData = (value) => {
-    axios
-      .get("https://buildathon.onrender.com/camp/all")
-      .then((response) => {
-        // Assuming response.data.data is the correct structure
-        const json = response.data.data;
+  const fetchData = async (value) => {
+    try {
+      const response = await axios.get("http://localhost:3001/camp/all");
+      const camps = response.data.data || [];
 
-        // Log to check if json is an array
-        console.log(Array.isArray(json)); // should log true if it's an array
-
-        // Ensure value is not undefined or null
-        if (!value) {
-          console.error("Search value is undefined or null");
-          return;
-        }
-
-        // Filter camps based on their name or address
-        const filteredResults = json.filter((camp) => {
-          // Check if name and address exist before applying toLowerCase
-          const nameMatch =
-            camp.name &&
-            camp.name.toLowerCase().includes(value.toLowerCase());
-          const addressMatch =
-            camp.address &&
-            camp.address.toLowerCase().includes(value.toLowerCase());
-
-          // Return true if either name or address matches
-          return nameMatch || addressMatch;
-        });
-
-        // Update state with filtered results
-        setResults(filteredResults);
-      })
-      .catch((error) => {
-        console.error("Error fetching data: ", error);
+      // Filter camps based on name or address (both case-insensitive)
+      const filteredResults = camps.filter((camp) => {
+        const nameMatch = camp.name
+          ?.toLowerCase()
+          .includes(value.toLowerCase());
+        const addressMatch = camp.address
+          ?.toLowerCase()
+          .includes(value.toLowerCase());
+        return nameMatch || addressMatch;
       });
+
+      setResults(filteredResults);
+    } catch (error) {
+      console.error("Error fetching data: ", error);
+    }
   };
 
-  const handleChange = (value) => {
+  const handleChange = (e) => {
+    const value = e.target.value;
     setInput(value);
-    fetchData(value); // Pass the actual input to fetchData
+
+    if (value.trim() === "") {
+      setResults([]); // Clear results when input is empty
+    } else {
+      fetchData(value); // Trigger search when there's input
+    }
+  };
+
+  const handleClick = () => {
+    setIsActive(true); // Stay expanded on click
+  };
+
+  const handleBlur = () => {
+    if (input.trim() === "") {
+      setIsActive(false); // Retract when input is empty
+    }
   };
 
   return (
-    <div className="w-full flex flex-col items-center">
-      <div className="input-wrapper flex w-full max-w-md p-3">
-        <FaSearch id="search-icon" className="text-blue-500" />
+    <div
+      className={`fixed top-4 left-4 transition-all duration-300 ease-in-out ${
+        isActive ? "w-2/3" : "w-12"
+      } hover:w-2/3`} // Expand on hover
+      style={{
+        zIndex: 10, // Ensure it's above other content
+      }}
+    >
+      <div
+        className={`flex items-center bg-white rounded-full p-3 shadow-lg transition-all duration-300 ease-in-out ${
+          isActive ? "w-full" : "w-12"
+        }`}
+        onClick={handleClick} // Keep expanded on click
+      >
+        <FaSearch className="text-blue-500" />
+
+        {/* Input is visible only when active */}
         <input
-          className="w-full bg-transparent border-none focus:outline-none text-xl pl-2"
-          placeholder="Type to search..."
+          type="text"
+          className={`transition-all duration-300 ease-in-out ${
+            isActive
+              ? "w-full opacity-100 pl-3"
+              : "w-0 opacity-0 pointer-events-none"
+          } bg-transparent border-none focus:outline-none text-lg`}
+          placeholder="Search by camp name or address..."
           value={input}
-          onChange={(e) => handleChange(e.target.value)}
+          onChange={handleChange}
+          onBlur={handleBlur}
         />
       </div>
-      <SearchResultsList results={results} />
+
+      {/* Render results if there are any */}
+      {results.length > 0 && <SearchResultsList results={results} />}
     </div>
   );
 };
 
-const SearchResult = ({ result, path }) => {
+const SearchResult = ({ result }) => {
   const navigate = useNavigate();
 
   const handleClick = () => {
-    navigate(path);
+    // Navigate to a detailed page for this camp, assuming there's a camp detail route
+    navigate(`/camp/${result._id}`);
   };
 
   return (
@@ -78,16 +102,17 @@ const SearchResult = ({ result, path }) => {
       className="search-result p-2 border-b cursor-pointer hover:bg-gray-100"
       onClick={handleClick}
     >
-      {result}
+      <h2 className="font-semibold">{result.name}</h2>
+      <p className="text-gray-600">{result.address}</p>
     </div>
   );
 };
 
 const SearchResultsList = ({ results }) => {
   return (
-    <div className="results-list w-full bg-white shadow-md rounded-lg mt-4 max-h-72 overflow-y-auto">
-      {results.map((result, id) => (
-        <SearchResult result={result.name} path={result.path || "/"} key={id} />
+    <div className="w-full bg-white shadow-md rounded-lg mt-4 max-h-72 overflow-y-auto">
+      {results.map((result) => (
+        <SearchResult key={result._id} result={result} />
       ))}
     </div>
   );
