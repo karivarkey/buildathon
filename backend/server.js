@@ -8,6 +8,7 @@ const { v4: uuidv4 } = require("uuid");
 const cors = require("cors"); // Import the cors package
 const NewsAPI = require("newsapi");
 const SOSCall = require("./models/sos");
+const Alert = require("./models/alert");
 
 //get MONGO_URI from .env file
 require("dotenv").config();
@@ -391,6 +392,92 @@ app.get("/disease/largest", async (req, res) => {
       message: "Error retrieving disease with the largest number of cases",
       error: error.message,
     });
+  }
+});
+
+app.post("/api/alert", async (req, res) => {
+  const { location, disease, radius } = req.body;
+
+  if (!location || !disease || !radius) {
+    return res
+      .status(400)
+      .json({ error: "All fields are required: location, disease, radius." });
+  }
+
+  try {
+    // Reverse geocode the location to get latitude and longitude
+    const geoResponse = await axios.get(
+      "https://nominatim.openstreetmap.org/search",
+      {
+        params: {
+          q: location,
+          format: "json",
+          addressdetails: 1,
+        },
+        headers: {
+          "User-Agent": "MyGeocodingApp/1.0 (myemail@example.com)", // Replace with your app name and email
+        },
+      }
+    );
+
+    if (!geoResponse.data || geoResponse.data.length === 0) {
+      return res
+        .status(404)
+        .json({ error: "No results found for the provided location." });
+    }
+
+    // Extract latitude and longitude from the response
+    const { lat: latitude, lon: longitude } = geoResponse.data[0];
+
+    // Create a new Alert
+    const newAlert = new Alert({
+      latitude: parseFloat(latitude),
+      longitude: parseFloat(longitude),
+      disease,
+      radius,
+      location, // Save the user-provided location
+    });
+
+    // Save the alert to the database
+    const savedAlert = await newAlert.save();
+
+    res.status(201).json(savedAlert);
+  } catch (error) {
+    console.error("Error during alert processing:", error);
+    res
+      .status(500)
+      .json({ error: "An error occurred while processing the alert." });
+  }
+});
+// Get all alerts
+app.get("/api/alerts", async (req, res) => {
+  try {
+    const alerts = await Alert.find();
+    res.status(200).json(alerts);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+// Endpoint for removing an alert by ID
+app.delete("/api/alerts/:id", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // Use findByIdAndDelete instead of findByIdAndRemove
+    const deletedAlert = await Alert.findByIdAndDelete(id);
+
+    if (!deletedAlert) {
+      return res.status(404).json({ error: "Alert not found." });
+    }
+
+    res
+      .status(200)
+      .json({ message: "Alert removed successfully.", alert: deletedAlert });
+  } catch (error) {
+    console.error("Error during alert deletion:", error);
+    res
+      .status(500)
+      .json({ error: "An error occurred while deleting the alert." });
   }
 });
 
