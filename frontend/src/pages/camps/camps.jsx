@@ -1,4 +1,4 @@
-import PenguinMap from "./compoenets/map/map";
+import PenguinMap from "./components/map/map";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import Navbar from "../../components/Navbar/Navbar";

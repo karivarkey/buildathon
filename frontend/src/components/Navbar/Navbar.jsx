@@ -14,7 +14,7 @@ const Navbar = (props) => {
     {
       src: medicine,
       alt: "Medicine",
-      route: "/manage-camps",
+      route: "/manage/login",
       label: "adminCamp",
     },
     { src: building, alt: "Building", route: "/camps", label: "camps" },
