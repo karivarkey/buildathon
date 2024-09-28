@@ -9,7 +9,7 @@ Tell us about your project here
 [1.Geevarghese Regi](github.com/karivarkey)  
 [2.Kevin Johns Jolly](github.com/kevinjj65)  
 [3.Milee B Kokkatt](github.com/milee-b)  
-[[4.Karthika Suresh]([github.com/karthikasurech03](https://github.com/karthikasuresh03)](https://github.com/karthikasuresh03))
+[[4.Karthika Suresh](https://github.com/karthikasuresh03)
 
 ## Link to Project
 
